@@ -1,12 +1,10 @@
 #!/bin/bash
-module load StdEnv/2016
-module load gcc/6.4.0
-module load python/3.6.3
-module load scipy-stack
-source /project/rpp-blairt2k/machine_learning/production_software/root/install/bin/thisroot.sh
-source /project/rpp-blairt2k/machine_learning/production_software/Geant4/geant4.10.01.p03-install/share/Geant4-10.1.3/geant4make/geant4make.sh
-export G4WORKDIR=/project/rpp-blairt2k/machine_learning/production_software/WCSim/exe
+source /Users/diiego/software/ROOT/ROOT_6.24/install/bin/thisroot.sh
+cd  /Users/diiego/software/GEANT4/GEANT4_10.1/install/bin
+source geant4.sh
+cd /Users/diiego/software/watchmal/DataTools/cedar_scripts
+export G4WORKDIR=/Users/diiego/software/GEANT4/GEANT4_10.1/build
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+"$LD_LIBRARY_PATH:"}${G4LIB}/${G4SYSTEM}
-export WCSIMDIR=/project/rpp-blairt2k/machine_learning/production_software/WCSim
+export WCSIMDIR=/Users/diiego/software/WCTE_WCSim/mybuild/build
 export DATATOOLS="$(cd "$( dirname "${BASH_SOURCE[0]}" )/.." >/dev/null 2>&1 && pwd )"
 export PYTHONPATH=$DATATOOLS:$PYTHONPATH
