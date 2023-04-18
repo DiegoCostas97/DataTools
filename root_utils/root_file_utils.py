@@ -2,7 +2,7 @@ import ROOT
 import os
 import numpy as np
 
-ROOT.gSystem.Load(os.environ['WCSIMDIR'] + "/libWCSimRoot.so")
+ROOT.gSystem.Load(os.environ['WCSIMDIR'] + "/libWCSimRoot.dylib")
 
 
 class WCSim:
