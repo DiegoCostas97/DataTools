@@ -29,76 +29,89 @@ def dump_file(infile, outfile):
 
     # All data arrays are initialized here
 
-    event_id = np.empty(nevents, dtype=np.int32)
+    event_id  = np.empty(nevents, dtype=np.int32)
     root_file = np.empty(nevents, dtype=object)
 
-    pid = np.empty(nevents, dtype=np.int32)
-    position = np.empty((nevents, 3), dtype=np.float64)
+    pid       = np.empty(nevents, dtype=np.int32)
+    position  = np.empty((nevents, 3), dtype=np.float64)
     direction = np.empty((nevents, 3), dtype=np.float64)
-    energy = np.empty(nevents,dtype=np.float64)
+    energy    = np.empty(nevents,dtype=np.float64)
 
-    digi_hit_pmt = np.empty(nevents, dtype=object)
-    digi_hit_charge = np.empty(nevents, dtype=object)
-    digi_hit_time = np.empty(nevents, dtype=object)
-    digi_hit_trigger = np.empty(nevents, dtype=object)
+    digi_hit_pmt             = np.empty(nevents, dtype=object)
+    digi_hit_charge          = np.empty(nevents, dtype=object)
+    digi_hit_time            = np.empty(nevents, dtype=object)
+    digi_hit_trigger         = np.empty(nevents, dtype=object)
+    digi_hit_position        = np.empty(nevents, dtype=object)
+    digi_hit_real_hit_parent = np.empty(nevents, dtype=object)
+    digi_hit_real_hit_times  = np.empty(nevents, dtype=object)
+    digi_hit_real_hit_creator= np.empty(nevents, dtype=object)
 
-    true_hit_pmt = np.empty(nevents, dtype=object)
-    true_hit_time = np.empty(nevents, dtype=object)
-    true_hit_pos = np.empty(nevents, dtype=object)
-    true_hit_start_time = np.empty(nevents, dtype=object)
-    true_hit_start_pos = np.empty(nevents, dtype=object)
-    true_hit_parent = np.empty(nevents, dtype=object)
+    true_hit_pmt             = np.empty(nevents, dtype=object)
+    true_hit_time            = np.empty(nevents, dtype=object)
+    true_hit_pos             = np.empty(nevents, dtype=object)
+    true_hit_start_time      = np.empty(nevents, dtype=object)
+    true_hit_start_pos       = np.empty(nevents, dtype=object)
+    true_hit_parent          = np.empty(nevents, dtype=object)
+    true_hit_creator_process = np.empty(nevents, dtype=object)
 
-    track_id = np.empty(nevents, dtype=object)
-    track_pid = np.empty(nevents, dtype=object)
-    track_start_time = np.empty(nevents, dtype=object)
-    track_energy = np.empty(nevents, dtype=object)
-    track_start_position = np.empty(nevents, dtype=object)
-    track_stop_position = np.empty(nevents, dtype=object)
-    track_parent = np.empty(nevents, dtype=object)
-    track_flag = np.empty(nevents, dtype=object)
+    track_id              = np.empty(nevents, dtype=object)
+    track_pid             = np.empty(nevents, dtype=object)
+    track_start_time      = np.empty(nevents, dtype=object)
+    track_energy          = np.empty(nevents, dtype=object)
+    track_start_position  = np.empty(nevents, dtype=object)
+    track_stop_position   = np.empty(nevents, dtype=object)
+    track_parent          = np.empty(nevents, dtype=object)
+    track_creator_process = np.empty(nevents, dtype=object)
+    track_flag            = np.empty(nevents, dtype=object)
 
     trigger_time = np.empty(nevents, dtype=object)
     trigger_type = np.empty(nevents, dtype=object)
 
     for ev in range(wcsim.nevent):
+        # print(ev)
         wcsim.get_event(ev)
 
         event_info = wcsim.get_event_info()
-        pid[ev] = event_info["pid"]
-        position[ev] = event_info["position"]
+        pid[ev]       = event_info["pid"]
+        position[ev]  = event_info["position"]
         direction[ev] = event_info["direction"]
-        energy[ev] = event_info["energy"]
+        energy[ev]    = event_info["energy"]
 
         true_hits = wcsim.get_hit_photons()
-        true_hit_pmt[ev] = true_hits["pmt"]
-        true_hit_time[ev] = true_hits["end_time"]
-        true_hit_pos[ev] = true_hits["end_position"]
-        true_hit_start_time[ev] = true_hits["start_time"]
-        true_hit_start_pos[ev] = true_hits["start_position"]
-        true_hit_parent[ev] = true_hits["track"]
+        true_hit_pmt[ev]             = true_hits["pmt"]
+        true_hit_time[ev]            = true_hits["end_time"]
+        true_hit_pos[ev]             = true_hits["end_position"]
+        true_hit_start_time[ev]      = true_hits["start_time"]
+        true_hit_start_pos[ev]       = true_hits["start_position"]
+        true_hit_parent[ev]          = true_hits["track"]
+        true_hit_creator_process[ev] = true_hits["creator_process"]
 
         digi_hits = wcsim.get_digitized_hits()
-        digi_hit_pmt[ev] = digi_hits["pmt"]
-        digi_hit_charge[ev] = digi_hits["charge"]
-        digi_hit_time[ev] = digi_hits["time"]
-        digi_hit_trigger[ev] = digi_hits["trigger"]
+        digi_hit_pmt[ev]             = digi_hits["pmt"]
+        digi_hit_charge[ev]          = digi_hits["charge"]
+        digi_hit_time[ev]            = digi_hits["time"]
+        digi_hit_trigger[ev]         = digi_hits["trigger"]
+        digi_hit_position[ev]        = digi_hits["position"]
+        digi_hit_real_hit_parent[ev] = digi_hits["real_hit_parent"]
+        digi_hit_real_hit_times[ev]  = digi_hits["hits_times"]
+        digi_hit_real_hit_creator[ev]= digi_hits["hits_creator"]
 
         tracks = wcsim.get_tracks()
-        track_id[ev] = tracks["id"]
-        track_pid[ev] = tracks["pid"]
-        track_start_time[ev] = tracks["start_time"]
-        track_energy[ev] = tracks["energy"]
-        track_start_position[ev] = tracks["start_position"]
-        track_stop_position[ev] = tracks["stop_position"]
-        track_parent[ev] = tracks["parent"]
-        track_flag[ev] = tracks["flag"]
+        track_id[ev]              = tracks["id"]
+        track_pid[ev]             = tracks["pid"]
+        track_start_time[ev]      = tracks["start_time"]
+        track_energy[ev]          = tracks["energy"]
+        track_start_position[ev]  = tracks["start_position"]
+        track_stop_position[ev]   = tracks["stop_position"]
+        track_parent[ev]          = tracks["parent_id"]
+        track_creator_process[ev] = tracks["creatorProcess"]
+        track_flag[ev]            = tracks["flag"]
 
         triggers = wcsim.get_triggers()
         trigger_time[ev] = triggers["time"]
         trigger_type[ev] = triggers["type"]
 
-        event_id[ev] = ev
+        event_id[ev]  = ev
         root_file[ev] = infile
 
     np.savez_compressed(outfile,
@@ -112,12 +125,17 @@ def dump_file(infile, outfile):
                         digi_hit_charge=digi_hit_charge,
                         digi_hit_time=digi_hit_time,
                         digi_hit_trigger=digi_hit_trigger,
+                        digi_hit_position=digi_hit_position,
+                        digi_hit_real_hit_parent=digi_hit_real_hit_parent,
+                        digi_hit_real_hit_times=digi_hit_real_hit_times,
+                        digi_hit_real_hit_creator=digi_hit_real_hit_creator,
                         true_hit_pmt=true_hit_pmt,
                         true_hit_time=true_hit_time,
                         true_hit_pos=true_hit_pos,
                         true_hit_start_time=true_hit_start_time,
                         true_hit_start_pos=true_hit_start_pos,
                         true_hit_parent=true_hit_parent,
+                        true_hit_creator_process=true_hit_creator_process,
                         track_id=track_id,
                         track_pid=track_pid,
                         track_start_time=track_start_time,
@@ -125,6 +143,7 @@ def dump_file(infile, outfile):
                         track_start_position=track_start_position,
                         track_stop_position=track_stop_position,
                         track_parent=track_parent,
+                        track_creator_process=track_creator_process,
                         track_flag=track_flag,
                         trigger_time=trigger_time,
                         trigger_type=trigger_type

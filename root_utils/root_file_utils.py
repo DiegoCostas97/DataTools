@@ -2,7 +2,7 @@ import ROOT
 import os
 import numpy as np
 
-ROOT.gSystem.Load(os.environ['WCSIMDIR'] + "/libWCSimRoot.dylib")
+ROOT.gSystem.Load("/Users/diiego/Desktop/install/lib/libWCSimRoot.dylib")
 
 
 class WCSim:
@@ -118,21 +118,54 @@ class WCSim:
         time = []
         pmt = []
         trigger = []
+        hits_parents = []
+        hits_creator = []
+        hits_times   = []
+
         for t in range(self.ntrigger):
             self.get_trigger(t)
-            for hit in self.trigger.GetCherenkovDigiHits():
-                pmt_id = hit.GetTubeId() - 1
-                position.append([self.geo.GetPMT(pmt_id).GetPosition(j) for j in range(3)])
-                charge.append(hit.GetQ())
-                time.append(hit.GetT())
-                pmt.append(pmt_id)
-                trigger.append(t)
+            hit_times = self.trigger.GetCherenkovHitTimes()
+            if self.ntrigger > 1:
+                pass
+
+            else:
+                for digihit in self.trigger.GetCherenkovDigiHits():
+                    pmt_id = digihit.GetTubeId() - 1
+                    position.append([self.geo.GetPMT(pmt_id).GetPosition(j) for j in range(3)])
+                    charge.append(digihit.GetQ())
+                    time.append(digihit.GetT())
+                    pmt.append(pmt_id)
+                    trigger.append(t)
+
+                    real_hit_parent = []
+                    hit_time = []
+                    hit_creator = []
+
+                    photonIDs = digihit.GetPhotonIds()
+
+                    corresponding_hit_times = []
+                    for photon_id in photonIDs:
+                        # print("PhotonID: {}".format(photon_id))
+                        corresponding_hit_times.append(hit_times.At(photon_id))
+
+                    for corresponding_hit_time in corresponding_hit_times:
+                        real_hit_parent.append(corresponding_hit_time.GetParentID())
+                        hit_time.append(corresponding_hit_time.GetTruetime())
+                        hit_creator.append(corresponding_hit_time.GetPhotonCreatorProcess())
+
+                    hits_parents.append(real_hit_parent)
+                    hits_times.append(hit_time)
+                    hits_creator.append(hit_creator)
+
         hits = {
             "position": np.asarray(position, dtype=np.float32),
-            "charge": np.asarray(charge, dtype=np.float32),
-            "time": np.asarray(time, dtype=np.float32),
-            "pmt": np.asarray(pmt, dtype=np.int32),
-            "trigger": np.asarray(trigger, dtype=np.int32)
+            "charge":   np.asarray(charge, dtype=np.float32),
+            "time":     np.asarray(time, dtype=np.float32),
+            "pmt":      np.asarray(pmt, dtype=np.int32),
+            "trigger":  np.asarray(trigger, dtype=np.int32),
+            "real_hit_parent" : hits_parents,
+            "hits_times"      : hits_times,
+            "hits_creator"    : hits_creator
         }
         return hits
 
@@ -172,6 +205,7 @@ class WCSim:
         track = []
         pmt = []
         trigger = []
+        creatorProcess = []
         for t in range(self.ntrigger):
             self.get_trigger(t)
             n_photons = self.trigger.GetNcherenkovhittimes()
@@ -184,14 +218,16 @@ class WCSim:
             start_time.append(np.zeros(n_photons, dtype=np.float32))
             start_position.append(np.zeros((n_photons, 3), dtype=np.float32))
             end_position.append(np.zeros((n_photons, 3), dtype=np.float32))
+            creatorProcess.append(np.zeros(n_photons, dtype=object))
             photons = self.trigger.GetCherenkovHitTimes()
             end_time[t][:] = [p.GetTruetime() for p in photons]
             track[t][:] = [p.GetParentID() for p in photons]
+            creatorProcess[t][:] = [p.GetPhotonCreatorProcess() for p in photons]
             try:  # Only works with new tracking branch of WCSim
                 start_time[t][:] = [p.GetPhotonStartTime() for p in photons]
                 for i in range(3):
                     start_position[t][:,i] = [p.GetPhotonStartPos(i)/10 for p in photons]
-                    end_position[t][:,i] = [p.GetPhotonEndPos(i)/10 for p in photons]
+                    end_position[t][:,i]   = [p.GetPhotonEndPos(i)/10 for p in photons]
             except AttributeError: # leave as zeros if not using tracking branch
                 pass
         photons = {
@@ -201,7 +237,8 @@ class WCSim:
             "end_time": np.concatenate(end_time),
             "track": np.concatenate(track),
             "pmt": np.concatenate(pmt),
-            "trigger": np.concatenate(trigger)
+            "trigger": np.concatenate(trigger),
+            "creator_process": np.concatenate(creatorProcess)
         }
         return photons
 
@@ -213,7 +250,9 @@ class WCSim:
         start_position = []
         stop_position = []
         parent = []
+        creatorProcess = []
         flag = []
+        parent_id = []
         for t in range(self.ntrigger):
             self.get_trigger(t)
             for track in self.trigger.GetTracks():
@@ -224,7 +263,9 @@ class WCSim:
                 start_position.append([track.GetStart(i) for i in range(3)])
                 stop_position.append([track.GetStop(i) for i in range(3)])
                 parent.append(track.GetParenttype())
+                creatorProcess.append(track.GetCreatorProcessName())
                 flag.append(track.GetFlag())
+                parent_id.append(track.GetParentId())
         tracks = {
             "id": np.asarray(track_id, dtype=np.int32),
             "pid": np.asarray(pid, dtype=np.int32),
@@ -233,7 +274,9 @@ class WCSim:
             "start_position": np.asarray(start_position, dtype=np.float32),
             "stop_position": np.asarray(stop_position, dtype=np.float32),
             "parent": np.asarray(parent, dtype=np.int32),
-            "flag": np.asarray(flag, dtype=np.int32)
+            "creatorProcess": np.asarray(creatorProcess, dtype=object),
+            "flag": np.asarray(flag, dtype=np.int32),
+            "parent_id": np.asarray(parent_id, dtype=np.int32)
         }
         return tracks
 
