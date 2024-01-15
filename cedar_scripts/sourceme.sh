@@ -4,8 +4,8 @@ source /Users/diiego/software/ROOT/ROOT_6.24/install/bin/thisroot.sh
 #source geant4.sh
 #cd /Users/diiego/software/watchmal/DataTools/cedar_scripts
 
-export G4WORKDIR=/Users/diiego/software/GEANT4/GEANT4_10.1/build
+export G4WORKDIR=/Users/diiego/software/GEANT4/GEANT4_10.3.3/build
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+"$LD_LIBRARY_PATH:"}${G4LIB}/${G4SYSTEM}
-export WCSIMDIR=/Users/diiego/software/wcsim_replacement/build
+export WCSIMDIR=/Users/diiego/Desktop/WCSim
 export DATATOOLS="$(cd "$( dirname "${BASH_SOURCE[0]}" )/.." >/dev/null 2>&1 && pwd )"
 export PYTHONPATH=$DATATOOLS:$PYTHONPATH
