@@ -122,40 +122,41 @@ class WCSim:
         hits_creator = []
         hits_times   = []
 
-        for t in range(self.ntrigger):
-            self.get_trigger(t)
-            hit_times = self.trigger.GetCherenkovHitTimes()
-            if self.ntrigger > 1:
-                pass
+        # for t in range(self.ntrigger):
+        self.get_trigger(0)
+        hit_times = self.trigger.GetCherenkovHitTimes()
 
-            else:
-                for digihit in self.trigger.GetCherenkovDigiHits():
-                    pmt_id = digihit.GetTubeId() - 1
-                    position.append([self.geo.GetPMT(pmt_id).GetPosition(j) for j in range(3)])
-                    charge.append(digihit.GetQ())
-                    time.append(digihit.GetT())
-                    pmt.append(pmt_id)
-                    trigger.append(t)
+        # if self.ntrigger > 1:
+            # pass
 
-                    real_hit_parent = []
-                    hit_time = []
-                    hit_creator = []
+        # else:
+        for digihit in self.trigger.GetCherenkovDigiHits():
+            pmt_id = digihit.GetTubeId() - 1
+            position.append([self.geo.GetPMT(pmt_id).GetPosition(j) for j in range(3)])
+            charge.append(digihit.GetQ())
+            time.append(digihit.GetT())
+            pmt.append(pmt_id)
+            trigger.append(t)
 
-                    photonIDs = digihit.GetPhotonIds()
+            real_hit_parent = []
+            hit_time = []
+            hit_creator = []
 
-                    corresponding_hit_times = []
-                    for photon_id in photonIDs:
-                        # print("PhotonID: {}".format(photon_id))
-                        corresponding_hit_times.append(hit_times.At(photon_id))
+            photonIDs = digihit.GetPhotonIds()
 
-                    for corresponding_hit_time in corresponding_hit_times:
-                        real_hit_parent.append(corresponding_hit_time.GetParentID())
-                        hit_time.append(corresponding_hit_time.GetTruetime())
-                        hit_creator.append(corresponding_hit_time.GetPhotonCreatorProcess())
+            corresponding_hit_times = []
+            for photon_id in photonIDs:
+                # print("PhotonID: {}".format(photon_id))
+                corresponding_hit_times.append(hit_times.At(photon_id))
 
-                    hits_parents.append(real_hit_parent)
-                    hits_times.append(hit_time)
-                    hits_creator.append(hit_creator)
+            for corresponding_hit_time in corresponding_hit_times:
+                real_hit_parent.append(corresponding_hit_time.GetParentID())
+                hit_time.append(corresponding_hit_time.GetTruetime())
+                hit_creator.append(corresponding_hit_time.GetPhotonCreatorProcess())
+
+            hits_parents.append(real_hit_parent)
+            hits_times.append(hit_time)
+            hits_creator.append(hit_creator)
 
         hits = {
             "position": np.asarray(position, dtype=np.float32),
