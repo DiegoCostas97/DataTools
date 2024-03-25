@@ -114,60 +114,58 @@ class WCSim:
 
     def get_digitized_hits(self):
         position = []
-        charge = []
-        time = []
-        pmt = []
-        trigger = []
+        digihit_charge = []
+        digihit_time = []
+        digihit_pmt = []
+        trigger_id = []
         hits_parents = []
         hits_creator = []
         hits_times   = []
 
-        # for t in range(self.ntrigger):
-        self.get_trigger(0)
-        hit_times = self.trigger.GetCherenkovHitTimes()
+        hit_times = 0
 
-        # if self.ntrigger > 1:
-            # pass
+        for ii, t in enumerate(range(self.ntrigger)):
+            self.get_trigger(t)
 
-        # else:
-        for digihit in self.trigger.GetCherenkovDigiHits():
-            pmt_id = digihit.GetTubeId() - 1
-            position.append([self.geo.GetPMT(pmt_id).GetPosition(j) for j in range(3)])
-            charge.append(digihit.GetQ())
-            time.append(digihit.GetT())
-            pmt.append(pmt_id)
-            trigger.append(t)
+            hit_times = self.trigger.GetCherenkovHitTimes() if ii == 0 else hit_times # This was added by José Ángel and apparently solves the "bug"
 
-            real_hit_parent = []
-            hit_time = []
-            hit_creator = []
+            for digihit in self.trigger.GetCherenkovDigiHits():
+                pmt_id = digihit.GetTubeId() - 1
+                position.append([self.geo.GetPMT(pmt_id).GetPosition(j) for j in range(3)])
+                digihit_charge.append(digihit.GetQ())
+                digihit_time.append(digihit.GetT() + self.trigger.GetHeader().GetDate()) # Trigger Time need to be added to DigiHit time
+                digihit_pmt.append(pmt_id)
+                trigger_id.append(ii)
 
-            photonIDs = digihit.GetPhotonIds()
+                real_hit_parent = []
+                hit_time = []
+                hit_creator = []
 
-            corresponding_hit_times = []
-            for photon_id in photonIDs:
-                # print("PhotonID: {}".format(photon_id))
-                corresponding_hit_times.append(hit_times.At(photon_id))
+                photonIDs = digihit.GetPhotonIds()
 
-            for corresponding_hit_time in corresponding_hit_times:
-                real_hit_parent.append(corresponding_hit_time.GetParentID())
-                hit_time.append(corresponding_hit_time.GetTruetime())
-                hit_creator.append(corresponding_hit_time.GetPhotonCreatorProcess())
+                trueHitsInfo = []
+                for photon_id in photonIDs:
+                    trueHitsInfo.append(hit_times.At(photon_id))
 
-            hits_parents.append(real_hit_parent)
-            hits_times.append(hit_time)
-            hits_creator.append(hit_creator)
+                for info in trueHitsInfo:
+                    real_hit_parent.append(info.GetParentID())
+                    hit_time.append(info.GetTruetime())
+                    hit_creator.append(info.GetPhotonCreatorProcessName())
 
-        hits = {
-            "position": np.asarray(position, dtype=np.float32),
-            "charge":   np.asarray(charge, dtype=np.float32),
-            "time":     np.asarray(time, dtype=np.float32),
-            "pmt":      np.asarray(pmt, dtype=np.int32),
-            "trigger":  np.asarray(trigger, dtype=np.int32),
-            "real_hit_parent" : hits_parents,
-            "hits_times"      : hits_times,
-            "hits_creator"    : hits_creator
-        }
+                hits_parents.append(real_hit_parent)
+                hits_times.append(hit_time)
+                hits_creator.append(hit_creator)
+
+            hits = {
+                "position": np.asarray(position, dtype=np.float32),
+                "digihit_charge"         : np.asarray(digihit_charge, dtype=np.float32),
+                "digihit_time"           : np.asarray(digihit_time, dtype=np.float32),
+                "digihit_pmt"            : np.asarray(digihit_pmt, dtype=np.int32),
+                "trigger_id"             : np.asarray(trigger_id, dtype=np.int32),
+                "truehit_parent_trackID" : hits_parents,
+                "truehit_times"          : hits_times,
+                "truehit_creator"        : hits_creator
+            }
         return hits
 
     def get_true_hits(self):
@@ -207,6 +205,7 @@ class WCSim:
         pmt = []
         trigger = []
         creatorProcess = []
+
         for t in range(self.ntrigger):
             self.get_trigger(t)
             n_photons = self.trigger.GetNcherenkovhittimes()
@@ -223,7 +222,7 @@ class WCSim:
             photons = self.trigger.GetCherenkovHitTimes()
             end_time[t][:] = [p.GetTruetime() for p in photons]
             track[t][:] = [p.GetParentID() for p in photons]
-            creatorProcess[t][:] = [p.GetPhotonCreatorProcess() for p in photons]
+            creatorProcess[t][:] = [p.GetPhotonCreatorProcessName() for p in photons]
             try:  # Only works with new tracking branch of WCSim
                 start_time[t][:] = [p.GetPhotonStartTime() for p in photons]
                 for i in range(3):
@@ -252,6 +251,7 @@ class WCSim:
         stop_position = []
         parent = []
         creatorProcess = []
+
         flag = []
         parent_id = []
         for t in range(self.ntrigger):

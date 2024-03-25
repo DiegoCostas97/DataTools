@@ -10,6 +10,7 @@ Authors: Nick Prouse
 import argparse
 from root_utils.root_file_utils import *
 from root_utils.pos_utils import *
+from tqdm import tqdm
 
 ROOT.gROOT.SetBatch(True)
 
@@ -37,14 +38,14 @@ def dump_file(infile, outfile):
     direction = np.empty((nevents, 3), dtype=np.float64)
     energy    = np.empty(nevents,dtype=np.float64)
 
-    digi_hit_pmt             = np.empty(nevents, dtype=object)
-    digi_hit_charge          = np.empty(nevents, dtype=object)
-    digi_hit_time            = np.empty(nevents, dtype=object)
-    digi_hit_trigger         = np.empty(nevents, dtype=object)
-    digi_hit_position        = np.empty(nevents, dtype=object)
-    digi_hit_real_hit_parent = np.empty(nevents, dtype=object)
-    digi_hit_real_hit_times  = np.empty(nevents, dtype=object)
-    digi_hit_real_hit_creator= np.empty(nevents, dtype=object)
+    digi_hit_pmt                    = np.empty(nevents, dtype=object)
+    digi_hit_charge                 = np.empty(nevents, dtype=object)
+    digi_hit_time                   = np.empty(nevents, dtype=object)
+    digi_hit_trigger                = np.empty(nevents, dtype=object)
+    digi_hit_position               = np.empty(nevents, dtype=object)
+    digi_hit_truehit_parent_trackID = np.empty(nevents, dtype=object)
+    digi_hit_truehit_times          = np.empty(nevents, dtype=object)
+    digi_hit_truehit_creator        = np.empty(nevents, dtype=object)
 
     true_hit_pmt             = np.empty(nevents, dtype=object)
     true_hit_time            = np.empty(nevents, dtype=object)
@@ -67,8 +68,9 @@ def dump_file(infile, outfile):
     trigger_time = np.empty(nevents, dtype=object)
     trigger_type = np.empty(nevents, dtype=object)
 
-    for ev in range(wcsim.nevent):
-        # print(ev)
+    for ev in tqdm(range(wcsim.nevent), desc="Looping through events", unit="iter", dynamic_ncols=True):
+        # if ev%100 == 0:
+            # print(ev)
         wcsim.get_event(ev)
 
         event_info = wcsim.get_event_info()
@@ -87,14 +89,14 @@ def dump_file(infile, outfile):
         true_hit_creator_process[ev] = true_hits["creator_process"]
 
         digi_hits = wcsim.get_digitized_hits()
-        digi_hit_pmt[ev]             = digi_hits["pmt"]
-        digi_hit_charge[ev]          = digi_hits["charge"]
-        digi_hit_time[ev]            = digi_hits["time"]
-        digi_hit_trigger[ev]         = digi_hits["trigger"]
-        digi_hit_position[ev]        = digi_hits["position"]
-        digi_hit_real_hit_parent[ev] = digi_hits["real_hit_parent"]
-        digi_hit_real_hit_times[ev]  = digi_hits["hits_times"]
-        digi_hit_real_hit_creator[ev]= digi_hits["hits_creator"]
+        digi_hit_pmt[ev]                    = digi_hits["digihit_pmt"]
+        digi_hit_charge[ev]                 = digi_hits["digihit_charge"]
+        digi_hit_time[ev]                   = digi_hits["digihit_time"]
+        digi_hit_trigger[ev]                = digi_hits["trigger_id"]
+        digi_hit_position[ev]               = digi_hits["position"]
+        digi_hit_truehit_parent_trackID[ev] = digi_hits["truehit_parent_trackID"]
+        digi_hit_truehit_times[ev]          = digi_hits["truehit_times"]
+        digi_hit_truehit_creator[ev]        = digi_hits["truehit_creator"]
 
         tracks = wcsim.get_tracks()
         track_id[ev]              = tracks["id"]
@@ -126,9 +128,9 @@ def dump_file(infile, outfile):
                         digi_hit_time=digi_hit_time,
                         digi_hit_trigger=digi_hit_trigger,
                         digi_hit_position=digi_hit_position,
-                        digi_hit_real_hit_parent=digi_hit_real_hit_parent,
-                        digi_hit_real_hit_times=digi_hit_real_hit_times,
-                        digi_hit_real_hit_creator=digi_hit_real_hit_creator,
+                        digi_hit_truehit_parent_trackID=digi_hit_truehit_parent_trackID,
+                        digi_hit_truehit_times=digi_hit_truehit_times,
+                        digi_hit_truehit_creator=digi_hit_truehit_creator,
                         true_hit_pmt=true_hit_pmt,
                         true_hit_time=true_hit_time,
                         true_hit_pos=true_hit_pos,
