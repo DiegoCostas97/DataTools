@@ -127,7 +127,7 @@ class WCSim:
         for ii, t in enumerate(range(self.ntrigger)):
             self.get_trigger(t)
 
-            hit_times = self.trigger.GetCherenkovHitTimes() if ii == 0 else hit_times # This was added by José Ángel and apparently solves the "bug"
+            hit_times = self.trigger.GetCherenkovHitTimes() if ii == 0 else hit_times # Needed in order to access information of all triggers
 
             for digihit in self.trigger.GetCherenkovDigiHits():
                 pmt_id = digihit.GetTubeId() - 1
