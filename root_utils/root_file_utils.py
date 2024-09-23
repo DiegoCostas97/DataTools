@@ -124,10 +124,10 @@ class WCSim:
 
         hit_times = 0
 
-        for ii, t in enumerate(range(self.ntrigger)):
+        for t in range(self.ntrigger):
             self.get_trigger(t)
 
-            hit_times = self.trigger.GetCherenkovHitTimes() if ii == 0 else hit_times # Needed in order to access information of all triggers
+            hit_times = self.trigger.GetCherenkovHitTimes() if t == 0 else hit_times # Needed in order to access information of all triggers
 
             for digihit in self.trigger.GetCherenkovDigiHits():
                 pmt_id = digihit.GetTubeId() - 1
@@ -135,7 +135,7 @@ class WCSim:
                 digihit_charge.append(digihit.GetQ())
                 digihit_time.append(digihit.GetT() + self.trigger.GetHeader().GetDate()) # Trigger Time need to be added to DigiHit time
                 digihit_pmt.append(pmt_id)
-                trigger_id.append(ii)
+                trigger_id.append(t)
 
                 real_hit_parent = []
                 hit_time = []

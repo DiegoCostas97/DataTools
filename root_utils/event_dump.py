@@ -68,7 +68,7 @@ def dump_file(infile, outfile):
     trigger_time = np.empty(nevents, dtype=object)
     trigger_type = np.empty(nevents, dtype=object)
 
-    for ev in tqdm(range(wcsim.nevent), desc="Looping through events", unit="iter", dynamic_ncols=True): 
+    for ev in tqdm(range(wcsim.nevent), desc="Looping through events", unit="iter", dynamic_ncols=True):
         wcsim.get_event(ev)
 
         event_info = wcsim.get_event_info()
